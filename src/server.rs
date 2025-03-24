@@ -1,4 +1,5 @@
 use std::{
+    error::Error,
     fs,
     io::{prelude::*, BufReader},
     net::{TcpListener, TcpStream},
@@ -16,14 +17,16 @@ impl Server {
         Server {}
     }
 
-    pub fn run(&self, addr: &str, threads: usize) {
-        let listener = TcpListener::bind(addr).unwrap();
+    pub fn run(&self, addr: &str, threads: usize) -> Result<(), Box<dyn Error>> {
+        let listener = TcpListener::bind(addr)?;
         let pool = ThreadPool::new(threads);
 
         for stream in listener.incoming() {
             let stream = stream.unwrap();
             pool.execute(|| handle_connection(stream));
         }
+
+        Ok(())
     }
 }
 
